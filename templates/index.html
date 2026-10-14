@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f7f9" />
+    <title>Local AI Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Chat settings">
+        <a class="brand" href="/" aria-label="Local AI Chat home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3.5 14 9l5.5 2-5.5 2-2 5.5L10 13l-5.5-2L10 9l2-5.5Z" fill="currentColor" />
+              <path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" fill="currentColor" />
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <strong>Local AI</strong>
+            <span>Private assistant</span>
+          </span>
+        </a>
+
+        <button id="new-chat" class="new-chat-button" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          <span>New chat</span>
+          <kbd>Ctrl K</kbd>
+        </button>
+
+        <section class="sidebar-section model-section" aria-labelledby="model-label">
+          <label id="model-label" for="model-select">MODEL</label>
+          <div class="select-wrap">
+            <span class="model-indicator" aria-hidden="true"></span>
+            <select id="model-select" aria-label="Choose a model"></select>
+            <svg class="select-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
+          </div>
+          <p class="model-caption">Runs locally on your device</p>
+        </section>
+
+        <section class="history-section" aria-labelledby="history-heading">
+          <div class="history-heading">
+            <h2 id="history-heading">Your chats</h2>
+            <span id="history-count" class="history-count"></span>
+          </div>
+          <label class="visually-hidden" for="history-search">Search conversations</label>
+          <div class="history-search-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>
+            <input id="history-search" type="search" placeholder="Search conversations" autocomplete="off" />
+          </div>
+          <div id="conversation-list" class="conversation-list" aria-live="polite"></div>
+        </section>
+
+        <div class="sidebar-spacer"></div>
+
+        <section class="sidebar-section utility-section" aria-label="Conversation actions">
+          <button id="clear-chat" class="utility-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
+            <span>Clear messages</span>
+          </button>
+          <button id="delete-chat" class="utility-button danger" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
+            <span>Delete conversation</span>
+          </button>
+        </section>
+
+        <div class="sidebar-footer">
+          <span class="privacy-mark" aria-hidden="true"></span>
+          <span>Your messages stay on this device</span>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme">
+            <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.4 8.4 0 0 1 8.9 3.8a8.5 8.5 0 1 0 11.3 11.3Z" /></svg>
+          </button>
+        </div>
+      </aside>
+
+      <main class="chat-panel">
+        <header class="chat-header">
+          <div class="conversation-heading">
+            <span class="header-model-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 14 9l5.5 2-5.5 2-2 5.5L10 13l-5.5-2L10 9l2-5.5Z" fill="currentColor" /></svg>
+            </span>
+            <div>
+              <p class="eyebrow">LOCAL ASSISTANT</p>
+              <h1 id="conversation-title">New conversation</h1>
+            </div>
+          </div>
+          <span class="connection-pill"><span></span> On device</span>
+        </header>
+
+        <section id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Conversation"></section>
+
+        <div id="status-bar" class="status-bar hidden" role="status" aria-live="polite"></div>
+
+        <footer class="composer-area">
+          <form id="chat-form" class="composer">
+            <div id="attachment-preview" class="attachment-preview hidden" aria-live="polite"></div>
+            <label class="visually-hidden" for="user-input">Message</label>
+            <textarea
+              id="user-input"
+              rows="1"
+              placeholder="Message your local assistant..."
+              aria-label="Message input"
+            ></textarea>
+            <div class="composer-toolbar">
+              <div class="composer-tools">
+                <input id="file-input" class="visually-hidden" type="file" multiple />
+                <button id="attach-files" class="attach-button" type="button" aria-label="Attach files" title="Attach files (up to 4 files, 6 MiB each)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21.4 11.1-8.8 8.8a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7L9.7 17.2a2 2 0 0 1-2.8-2.8l8.5-8.5" /></svg>
+                  <span>Attach files</span>
+                </button>
+                <span class="composer-hint"><kbd>Enter</kbd> to send <span class="hint-divider">·</span> <kbd>Shift + Enter</kbd> for a new line</span>
+              </div>
+              <div class="composer-actions">
+                <button type="button" id="stop-generation" class="stop-button hidden">
+                  <span class="stop-square" aria-hidden="true"></span>
+                  Stop
+                </button>
+                <button type="submit" id="send-button" class="send-button" aria-label="Send message">
+                  <span>Send</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+          <p class="attachment-support">PDF, DOCX, XLSX, PPTX, text, code, CSV, JPG, PNG, WebP · photos require a vision model</p>
+          <p class="disclaimer">AI can make mistakes. Check important information.</p>
+        </footer>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
